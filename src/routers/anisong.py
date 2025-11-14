@@ -15,9 +15,14 @@ async def search_anisongs_by_theme(theme_type: str = Query(..., regex="^(OP|ED|I
     anisongs_results = []
     
     for song in anisongs:
-        query =  f"{song['song_title']} {song['anime']} {song['theme_type']}"
-         
-        yt_url, sp_url = await asyncio.gather(search_youtube(query), search_spotify(query), return_exceptions=True)
+        title = song["song_title"]
+        artists = song["artists"]
+        query_yt = f"{title} {song['anime']}"
+    
+        yt_task = search_youtube(query_yt)
+        sp_task = search_spotify(title, artists)
+        
+        yt_url, sp_url = await asyncio.gather(yt_task, sp_task, return_exceptions=True)
         
         if isinstance(yt_url, Exception):
             yt_url = None
@@ -28,6 +33,7 @@ async def search_anisongs_by_theme(theme_type: str = Query(..., regex="^(OP|ED|I
             "anime": song["anime"],
             "theme_type": song["theme_type"],
             "song_title": song["song_title"],
+            "artists": song["artists"],
             "youtube_url": yt_url,
             "spotify_url": sp_url
         })
