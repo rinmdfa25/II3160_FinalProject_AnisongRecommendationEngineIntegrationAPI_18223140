@@ -65,7 +65,6 @@ async def fetch_anisong_name(name: str, limit: int = 5):
 async def fetch_anisong_criteria(
     year: Optional[int] = None,
     season: Optional[str] = None,
-    genre: Optional[str] = None,
     limit: int = 25
 ):
     base_url = f"{BASE_URL}/anime"
@@ -79,9 +78,6 @@ async def fetch_anisong_criteria(
         params["filter[year]"] = year
     if season:
         params["filter[season]"] = season
-    if genre:
-        params["filter[genres]"] = genre
-
            
     async with httpx.AsyncClient() as client:
         response = await client.get(base_url, params=params)

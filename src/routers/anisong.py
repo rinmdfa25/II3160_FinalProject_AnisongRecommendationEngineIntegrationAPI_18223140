@@ -105,14 +105,12 @@ async def search_anisong_by_name(
 async def search_anisong_by_criteria(
     year: Optional[int] = Query(None, description="Filter by year (2025|2024|2023|2022|...)"),
     season: Optional[str] = Query(None, regex="^(Winter|Spring|Summer|Fall)"),
-    genre: Optional[str] = Query(None, description="Filter by genre (Action|Romance|Comedy|Drama|...)"),
     limit: int = Query(25, ge=1, le=50)
 ):
     
     anisongs = await fetch_anisong_criteria(
         year=year,
         season=season,
-        genre=genre,
         limit=limit
     )
     
