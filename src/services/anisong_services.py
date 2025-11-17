@@ -71,32 +71,20 @@ async def fetch_anisong_criteria(
     base_url = f"{BASE_URL}/anime"
     
     params = {
-        "include": "animethemes.song.artists,animethemes.animethemeentries.videos",
+        "include": "animethemes.song.artists",
         "page[size]": limit
     }
     
-    criteria_filters = {}
     if year:
-        criteria_filters["year"] = year
+        params["filter[year]"] = year
     if season:
-        criteria_filters["season"] = season
+        params["filter[season]"] = season
     if genre:
-        criteria_filters["genre"] = genre
-        
-    criteria_filter_str = "&".join(criteria_filters)
-    
-    if criteria_filters:
-        params["filter"] = criteria_filters
-        
-    url = (
-        f"{base_url}"
-        f"?{criteria_filter_str}"
-        f"&include=animethemes.song.artists,animethemes.animethemeentries.videos"
-        f"&page[size]={limit}"
-    )    
-    
+        params["filter[genres]"] = genre
+
+           
     async with httpx.AsyncClient() as client:
-        response = await client.get(url)
+        response = await client.get(base_url, params=params)
         response.raise_for_status()
         data = response.json()
         
