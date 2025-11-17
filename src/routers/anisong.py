@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Query
-from src.services.anisong_services import fetch_anisong_list
+from src.services.anisong_services import fetch_anisong_list, fetch_anisong_name
 from src.services.youtube_service import search_youtube
 from src.services.spotify_services import search_spotify
 import asyncio
+
 
 router = APIRouter(
     prefix="/anisong",
@@ -10,7 +11,7 @@ router = APIRouter(
 )
 
 @router.get("/themes")
-async def search_anisongs_by_theme(theme_type: str = Query(..., regex="^(OP|ED|INS)$"), limit: int = 5):
+async def search_anisongs_by_theme(theme_type: str = Query(..., regex="^(OP|ED|INS)$"), limit: int = Query(5, ge=1, le=100)):
     anisongs = await fetch_anisong_list(theme_type, limit)
     anisongs_results = []
     
@@ -45,33 +46,51 @@ async def search_anisong_by_name(
     name: str = Query(..., description="Name of anisong or anime title"),
     provider: str = Query("spotify", regex="^(spotify|youtube|both)$")
 ):
-    theme_type = ["OP", "ED", "INS"]
-    anisongs = await fetch_anisong_list(theme_type=theme_type, limit=5)    
-    anisongs_only_filtered = [s for s in anisongs if name.lower() in s["anime"].lower()  or name.lower() in s["song_title"].lower()]
 
-    if not anisongs_only_filtered:
+    anisong_names = await fetch_anisong_name(name=name, limit=5)    
+    
+    if not anisong_names:
         return {"count": 0, "results": []}
     
     anisongs_only = []
-    for song in anisongs_only_filtered:
-        query = f"{song['song_title']} {song['anime']} {song['theme_type']}"
-        yt_url, sp_url = None, None
+    for song in anisong_names:
+        song_title = song.get("song_title", "")
+        artists = song.get("artists", [])
+        
+        main_artist = artists[0] if artists else ""
+        query = f"{song_title} {main_artist} {song['anime']}"
+        
+        raw_yt_url, raw_sp_url = None, None 
+        yt_url, sp_url = None, None       
+        
         anisongs_search_tasks = []
         
         if provider in ("youtube", "both"):
             anisongs_search_tasks.append(search_youtube(query))
         if provider in ("spotify", "both"):
-            anisongs_search_tasks.append(search_spotify(query))
+            anisongs_search_tasks.append(search_spotify(song_title, main_artist))
             
         if anisongs_search_tasks:
             response = await asyncio.gather(*anisongs_search_tasks, return_exceptions=True)
+            
             if provider == "spotify":
-                sp_url = response[0]
+                raw_sp_url = response[0]
             elif provider == "youtube":
-                yt_url = response[0]
+                raw_yt_url = response[0]
             elif provider == "both":
-                sp_url, yt_url = response
-        
+                raw_yt_url, raw_sp_url = response
+
+            
+            if isinstance(raw_yt_url, BaseException):
+                yt_url = None
+            else:
+                yt_url = raw_yt_url
+
+            if isinstance(raw_sp_url, BaseException):
+                sp_url = None
+            else:
+                sp_url = raw_sp_url
+            
         anisongs_only.append({
             "anime": song["anime"],
             "song_title": song["song_title"],
@@ -81,4 +100,3 @@ async def search_anisong_by_name(
         })
 
     return {"count": len(anisongs_only), "results": anisongs_only}
-    

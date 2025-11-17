@@ -60,6 +60,6 @@ async def search_spotify(title, artist, anime=None):
             items = data.get("tracks", {}).get("items", [])
             
             if not items:
-                return None
-        return items[0]["external_urls"]["spotify"]
+                continue
+            return items[0]["external_urls"]["spotify"]
     
