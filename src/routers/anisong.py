@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from src.services.anisong_services import fetch_anisong_list, fetch_anisong_name, fetch_anisong_criteria
-from src.services.youtube_service import search_youtube
+from src.services.youtube_services import search_youtube
 from src.services.spotify_services import search_spotify
 from typing import Optional
 import asyncio
@@ -95,6 +95,7 @@ async def search_anisong_by_name(
             "anime": song["anime"],
             "song_title": song["song_title"],
             "theme_type": song["theme_type"],
+            "artists": song["artists"],
             "youtube_url": yt_url,
             "spotify_url": sp_url
         })
@@ -143,6 +144,7 @@ async def search_anisong_by_criteria(
             "anime": song["anime"],
             "song_title": song["song_title"],
             "theme_type": song["theme_type"],
+            "artists": song["artists"],
             "youtube_url": yt_url,
             "spotify_url": sp_url
         })    
