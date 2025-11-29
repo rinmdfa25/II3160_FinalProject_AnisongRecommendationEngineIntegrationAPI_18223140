@@ -40,7 +40,7 @@ async def fetch_anisong_list(theme_type: str, limit: int = 25):
         })
     return anime_context_only
 
-async def fetch_anisong_name(name: str, limit: int = 5):
+async def fetch_anisong_name(name: str, limit: int = 25):
     url = (
         f"{BASE_URL}/anime?"
         f"filter[name]={name}"
@@ -156,31 +156,46 @@ async def resolve_anisong(raw):
     }
     
 async def search_and_resolve_song(q: str, session: Session, user_id: int):
-    result = await fetch_anisong_list(q, limit =1)
+    try:
+        result = await fetch_anisong_list(q, limit =20)
+    except httpx.HTTPStatusError:
+        result = []
     if not result:
-        result = await fetch_anisong_name(q, limit=1)
+        try:
+            result = await fetch_anisong_name(q, limit =20)
+        except httpx.HTTPStatusError:
+            result = []
     if not result:
-        result = await fetch_anisong_criteria(limit=1)
+        try:
+            result = await fetch_anisong_criteria(q, limit =20)
+        except httpx.HTTPStatusError:
+            result = []
     if not result:
         return None
-    
     
     raw = result[0]
     resolved = await resolve_anisong(raw)
 
     title = resolved["song_title"]
-    artist = resolved["artists"][0] if resolved["artists"] else ""
+    artist = resolved["artists"][0] if resolved["artists"] else "Unknown"
     anime = resolved["anime"]
+    spotify_data = resolved["spotify_url"]
+    if isinstance(spotify_data, dict):
+        spotify_url = spotify_data.get("spotify_url")
+        popularity = spotify_data.get("popularity", 0)
+    else:
+        spotify_url = spotify_data
+        popularity = 0
 
     song = save_anisong(
         session=session,
         title=title,
         artist=artist,
         anime=anime,
-        spotify_url=resolved["spotify_url"],
-        popularity=0,
+        spotify_url=spotify_url,
+        popularity=popularity,
         youtube_url=resolved["youtube_url"]
-        )
+    )
 
     await save_user_history(session, user_id, song.id)
 

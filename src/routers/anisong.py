@@ -164,7 +164,7 @@ async def search_anisong_route(
     session: Session = Depends(get_session),
     user_id = Depends(get_current_user)
 ):
-    song = await search_and_resolve_song(q)
+    song = await search_and_resolve_song(q, session, user_id)
     if not song:
         return {"message": "no result found"}
     
