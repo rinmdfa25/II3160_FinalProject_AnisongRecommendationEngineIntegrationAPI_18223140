@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Query
-from src.services.anisong_services import fetch_anisong_list, fetch_anisong_name, fetch_anisong_criteria
+from fastapi import APIRouter, Query, Depends
+from sqlmodel import Session
+from src.services.anisong_services import fetch_anisong_list, fetch_anisong_name, fetch_anisong_criteria, save_anisong, save_user_history, search_and_resolve_song
+from src.services.preferences_service import update_preference_from_history
 from src.services.youtube_services import search_youtube
 from src.services.spotify_services import search_spotify
+from src.routers.auth import get_current_user
+from src.utils.sqlite import get_session
 from typing import Optional
 import asyncio
-
 
 router = APIRouter(
     prefix="/anisong",
@@ -150,3 +153,44 @@ async def search_anisong_by_criteria(
         })    
         
     return {"count": len(anisongs_results), "results": anisongs_results}
+
+@router.post("/save")
+def save_song_route(title: str, artist: str, anime: str, spotify_url: str, popularity: int, youtube_url: str, session: Session = Depends(get_session)):
+    return save_anisong(session, title, artist, anime, spotify_url, popularity, youtube_url)
+
+@router.post("/search")
+async def search_anisong_route(
+    q: str,
+    session: Session = Depends(get_session),
+    user_id = Depends(get_current_user)
+):
+    song = await search_and_resolve_song(q)
+    if not song:
+        return {"message": "no result found"}
+    
+    title = song["song_title"]
+    artist = song["artists"][0] if song["artists"] else "Unknown"
+    anime = song["anime"]
+    spotify = song["spotify_url"]
+    youtube = song["youtube_url"]
+
+    saved = save_anisong(
+        session,
+        title,
+        artist,
+        anime,
+        spotify,
+        0,
+        youtube
+    )
+    
+    await save_user_history(session, int(user_id), saved.id)
+    
+    update_preference_from_history(
+        session,
+        int(user_id),
+        saved.artist,
+        saved.anime
+    )
+    
+    return song

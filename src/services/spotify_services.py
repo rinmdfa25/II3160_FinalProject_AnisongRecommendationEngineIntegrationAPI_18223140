@@ -61,5 +61,11 @@ async def search_spotify(title, artist, anime=None):
             
             if not items:
                 continue
-            return items[0]["external_urls"]["spotify"]
+            track = items[0]
+            return {
+                "spotify_url": track["external_urls"]["spotify"],
+                "name": track["name"],
+                "artists": track["artists"][0]["name"],
+                "popularity": track["popularity"]
+            }
     

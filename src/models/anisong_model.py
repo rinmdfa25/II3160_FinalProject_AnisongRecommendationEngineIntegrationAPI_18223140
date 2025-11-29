@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import List, Optional, Literal
 
+from sqlmodel import Field, SQLModel
+
 class Video(BaseModel):
     id: int
     resolution: Optional[str]
@@ -56,3 +58,36 @@ class Anisong(BaseModel):
     themes_metadata: Optional[List[ThemeMetadata]]
     anime_metadata: Optional[AnimeMetadata]
 
+class AnisongSearchResult(BaseModel):
+    count: int
+    results: List[Anisong]
+
+class AnisongThemeResult(BaseModel):
+    anime: str
+    song_title: str
+    artists: List[str]
+    theme_type: Literal["OP", "ED", "INS"]
+
+class AnisongNameResult(BaseModel):
+    anime: str
+    song_title: str
+    artists: List[str]
+    theme_type: Literal["OP", "ED", "INS"]
+    
+    
+class AnisongCriteriaResult(BaseModel):            
+    anime: str
+    song_title: str
+    artists: List[str]
+    theme_type: Literal["OP", "ED", "INS"]
+    year: Optional[int]
+    season: Optional[str]
+
+class AnisongDB(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    title: str
+    artist: str
+    anime: Optional[str]
+    spotify_url: Optional[str]
+    spotify_popularity: Optional[int]
+    youtube_url: Optional[str]

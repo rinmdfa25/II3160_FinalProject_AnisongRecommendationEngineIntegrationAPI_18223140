@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from src.routers import anisong, auth
-from src.utils.database import create_db_and_tables
+from src.routers import anisong, auth, preferences
+from src.utils.sqlite import create_db_and_tables
 
 app = FastAPI(
     title="Best Anisongs Gathering And Searching",
@@ -8,18 +8,17 @@ app = FastAPI(
 )
 
 
+app.include_router(preferences.router)
 app.include_router(anisong.router)
 app.include_router(auth.router)
+
+get_current_user = auth.get_current_user
+print(get_current_user)
 
 @app.on_event("startup")
 def on_start():
     create_db_and_tables()
     
-print("Loading anisong router", anisong.router.routes)
-print("Loading auth router", auth.router.routes)
-
-
-
 @app.get("/")
 def main():
     return {"message": "Welcome to Best Anisongs Gathering And Searching!"}

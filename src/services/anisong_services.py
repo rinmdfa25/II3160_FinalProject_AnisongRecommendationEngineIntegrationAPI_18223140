@@ -1,6 +1,11 @@
 import httpx
 from fastapi import Query
-from typing import Optional 
+from typing import Optional
+from sqlmodel import Session, select
+from src.models.anisong_model import AnisongDB
+from src.models.user_model import UserHistory
+from src.services.youtube_services import search_youtube
+from src.services.spotify_services import search_spotify
 
 BASE_URL = "https://api.animethemes.moe"
 
@@ -96,3 +101,87 @@ async def fetch_anisong_criteria(
                 "theme_type": theme.get("type")
             })  
     return anime_songs 
+
+def get_anisong_by_title_and_artist(session: Session, title: str, artist: str):
+    return session.exec(
+        select(AnisongDB).where(
+            AnisongDB.title == title,
+            AnisongDB.artist == artist
+        )
+    ).first()
+    
+def save_anisong(session: Session, title: str, artist: str, anime: str, spotify_url: str, popularity: int, youtube_url: str):
+    exists = get_anisong_by_title_and_artist(session, title, artist)
+    if exists:
+        return exists
+    
+    song = AnisongDB(
+        title=title,
+        artist=artist,
+        anime=anime,
+        spotify_url=spotify_url,
+        spotify_popularity=popularity,
+        youtube_url=youtube_url
+    )
+    
+    session.add(song)
+    session.commit()
+    session.refresh(song)
+    return song
+
+async def save_user_history(session: Session, user_id: int, song_id: int, score: float = 1.0):
+    history = UserHistory(user_id=user_id, song_id=song_id, score=score)
+    session.add(history)
+    session.commit()
+    session.refresh(history)
+    return history
+
+
+async def resolve_anisong(raw):
+    title = raw.get("song_title")
+    artists = raw.get("artists", [])
+    anime = raw.get("anime")
+    
+    main_artists = artists[0] if artists else ""
+    
+    youtube = await search_youtube(f"{title} {anime}")
+    spotify = await search_spotify(title, main_artists)
+    
+    return {
+        "anime": anime,
+        "song_title": title,
+        "artists": artists,
+        "youtube_url": youtube,
+        "spotify_url": spotify
+    }
+    
+async def search_and_resolve_song(q: str, session: Session, user_id: int):
+    result = await fetch_anisong_list(q, limit =1)
+    if not result:
+        result = await fetch_anisong_name(q, limit=1)
+    if not result:
+        result = await fetch_anisong_criteria(limit=1)
+    if not result:
+        return None
+    
+    
+    raw = result[0]
+    resolved = await resolve_anisong(raw)
+
+    title = resolved["song_title"]
+    artist = resolved["artists"][0] if resolved["artists"] else ""
+    anime = resolved["anime"]
+
+    song = save_anisong(
+        session=session,
+        title=title,
+        artist=artist,
+        anime=anime,
+        spotify_url=resolved["spotify_url"],
+        popularity=0,
+        youtube_url=resolved["youtube_url"]
+        )
+
+    await save_user_history(session, user_id, song.id)
+
+    return resolved
