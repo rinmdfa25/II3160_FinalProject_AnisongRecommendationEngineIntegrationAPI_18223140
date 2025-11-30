@@ -6,10 +6,15 @@ from src.models.anisong_model import AnisongDB
 from src.models.user_model import UserHistory
 from src.services.youtube_services import search_youtube
 from src.services.spotify_services import search_spotify
+import logging
+logging.basicConfig(level=logging.INFO)
 
 BASE_URL = "https://api.animethemes.moe"
 
 async def fetch_anisong_list(theme_type: str, limit: int = 25):
+    if not theme_type in ["OP", "ED", "INS"]:
+        return []
+    
     url = (
         f"{BASE_URL}/animetheme?"
         f"filter[type]={theme_type}"
@@ -40,7 +45,7 @@ async def fetch_anisong_list(theme_type: str, limit: int = 25):
         })
     return anime_context_only
 
-async def fetch_anisong_name(name: str, limit: int = 25):
+async def fetch_anisong_name(name: str, limit: int = 25):   
     url = (
         f"{BASE_URL}/anime?"
         f"filter[name]={name}"
@@ -81,7 +86,7 @@ async def fetch_anisong_criteria(
     
     if year:
         params["filter[year]"] = year
-    if season:
+    if season == "winter" or season == "spring" or season == "summer" or season == "fall":
         params["filter[season]"] = season
            
     async with httpx.AsyncClient() as client:
@@ -155,48 +160,61 @@ async def resolve_anisong(raw):
         "spotify_url": spotify
     }
     
-async def search_and_resolve_song(q: str, session: Session, user_id: int):
-    try:
-        result = await fetch_anisong_list(q, limit =20)
-    except httpx.HTTPStatusError:
-        result = []
-    if not result:
-        try:
-            result = await fetch_anisong_name(q, limit =20)
-        except httpx.HTTPStatusError:
-            result = []
-    if not result:
-        try:
-            result = await fetch_anisong_criteria(q, limit =20)
-        except httpx.HTTPStatusError:
-            result = []
-    if not result:
-        return None
+async def search_and_resolve_anisong(q: list[str], session: Session, user_id: int, limit: int = 15):
+    logging.info(f"Query: {q}, Limit: {limit}")
+    songs = []
     
-    raw = result[0]
-    resolved = await resolve_anisong(raw)
+    for query in q:    
+        try:
+            result = await fetch_anisong_list(query, limit =20)
+            logging.info(f"fetch_anisong_list returned {len(result)} items")
+        except httpx.HTTPStatusError as e:
+            logging.warning(f"fetch_anisong_list error: {e}")
+            result = []
+            
+        if not result:
+            try:
+                result = await fetch_anisong_name(query, limit =20)
+                logging.info(f"fetch_anisong_name returned {len(result)} items")
+            except httpx.HTTPStatusError as e:
+                logging.warning(f"fetch_anisong_name error: {e}")
+                result = []
+        if not result:
+            try:
+                result = await fetch_anisong_criteria(query, limit =20)
+                logging.info(f"fetch_anisong_criteria returned {len(result)} items")
+            except httpx.HTTPStatusError as e:
+                logging.warning(f"fetch_anisong_criteria error: {e}")
+                result = []
+        if not result:
+            return None
+        
+    for raw in result:
+        resolved = await resolve_anisong(raw)
+        logging.info(f"Resolved song: {resolved}")
+        songs.append(resolved)
 
-    title = resolved["song_title"]
-    artist = resolved["artists"][0] if resolved["artists"] else "Unknown"
-    anime = resolved["anime"]
-    spotify_data = resolved["spotify_url"]
-    if isinstance(spotify_data, dict):
-        spotify_url = spotify_data.get("spotify_url")
-        popularity = spotify_data.get("popularity", 0)
-    else:
-        spotify_url = spotify_data
-        popularity = 0
+        title = resolved["song_title"]
+        artist = resolved["artists"][0] if resolved["artists"] else "Unknown"
+        anime = resolved["anime"]
+        spotify_data = resolved["spotify_url"]
+        if isinstance(spotify_data, dict):
+            spotify_url = spotify_data.get("spotify_url")
+            popularity = spotify_data.get("popularity", 0)
+        else:
+            spotify_url = spotify_data
+            popularity = 0
 
-    song = save_anisong(
-        session=session,
-        title=title,
-        artist=artist,
-        anime=anime,
-        spotify_url=spotify_url,
-        popularity=popularity,
-        youtube_url=resolved["youtube_url"]
-    )
+        song = save_anisong(
+            session=session,
+            title=title,
+            artist=artist,
+            anime=anime,
+            spotify_url=spotify_url,
+            popularity=popularity,
+            youtube_url=resolved["youtube_url"]
+        )
 
-    await save_user_history(session, user_id, song.id)
+        await save_user_history(session, user_id, song.id)
 
-    return resolved
+    return songs

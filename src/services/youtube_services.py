@@ -17,13 +17,17 @@ async def search_youtube(query: str):
         "key": YOUTUBE_API_KEY
     }
     async with httpx.AsyncClient() as client:
-        response = await client.get(BASE_URL, params=params)
-        response.raise_for_status()
-        data = response.json()
-        if data["items"]:
-            video_id = data["items"][0]["id"]["videoId"]
-            return f"https://www.youtube.com/watch?v={video_id}"
-        return None
+        try:
+            response = await client.get(BASE_URL, params=params)
+            response.raise_for_status()
+            data = response.json()
+            if data["items"]:
+                video_id = data["items"][0]["id"]["videoId"]
+                return f"https://www.youtube.com/watch?v={video_id}"
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 403:
+                return None
+            raise e
     
 async def video_stats(video_id: str):
     url = "https://www.googleapis.com/youtube/v3/videos"

@@ -7,13 +7,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
-
 app.include_router(preferences.router)
 app.include_router(anisong.router)
 app.include_router(auth.router)
-
-get_current_user = auth.get_current_user
-print(get_current_user)
 
 @app.on_event("startup")
 def on_start():
