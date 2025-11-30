@@ -180,8 +180,17 @@ async def search_and_resolve_anisong(q: list[str], session: Session, user_id: in
                 logging.warning(f"fetch_anisong_name error: {e}")
                 result = []
         if not result:
+            if query.isdigit():
+                year = int(query)
+                season = None
+            elif query.lower() in ["winter", "spring", "summer", "fall"]:
+                season = query.lower()
+                year = None
+            else:
+                year = int(query)
+                season = str(query.lower())
             try:
-                result = await fetch_anisong_criteria(query, limit =20)
+                result = await fetch_anisong_criteria(year=year, season=season, limit=20)
                 logging.info(f"fetch_anisong_criteria returned {len(result)} items")
             except httpx.HTTPStatusError as e:
                 logging.warning(f"fetch_anisong_criteria error: {e}")
