@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query, Depends
 from sqlmodel import Session
-from src.services.anisong_services import fetch_anisong_list, fetch_anisong_name, fetch_anisong_criteria, save_anisong, save_user_history, search_and_resolve_anisong
+from src.services.anisong_services import fetch_anisong_artist, fetch_anisong_list, fetch_anisong_name, fetch_anisong_criteria, save_anisong, save_user_history, search_and_resolve_anisong
 from src.services.preferences_service import update_preference_from_history
 from src.services.youtube_services import search_youtube
 from src.services.spotify_services import search_spotify
@@ -104,6 +104,49 @@ async def search_anisong_by_name(
         })
 
     return {"count": len(anisongs_only), "results": anisongs_only}
+
+@router.get("/artists")
+async def search_anisong_by_artist(
+    artist: str = Query(..., description="Name of artist"),
+    limit: int = Query(25, ge=1, le=50)
+):
+    anisongs = await fetch_anisong_artist(artist=artist, limit=limit)
+    
+    if not anisongs:
+        return {"count": 0, "results": []}
+    
+    anisongs_results = []
+    for song in anisongs:
+        title = song.get("song_title", "")
+        artists = song.get("artists", [])
+        
+        main_artist = artists[0] if artists else ""
+        query = f"{title} {main_artist} {song.get('anime', '')}"
+        
+        yt_task = search_youtube(query)
+        sp_task = search_spotify(title, main_artist)
+        raw_yt_url, raw_sp_url = await asyncio.gather(yt_task, sp_task, return_exceptions=True)
+
+        if isinstance(raw_yt_url, BaseException):
+            yt_url = None
+        else:
+            yt_url = raw_yt_url
+        
+        if isinstance(raw_sp_url, BaseException):
+            sp_url = None
+        else:
+            sp_url = raw_sp_url
+            
+        anisongs_results.append({
+            "anime": song["anime"],
+            "song_title": song["song_title"],
+            "theme_type": song["theme_type"],
+            "artists": song["artists"],
+            "youtube_url": yt_url,
+            "spotify_url": sp_url
+        })    
+        
+    return {"count": len(anisongs_results), "results": anisongs_results}
 
 @router.get("/criteria")
 async def search_anisong_by_criteria(

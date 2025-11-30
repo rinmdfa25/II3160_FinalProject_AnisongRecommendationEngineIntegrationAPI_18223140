@@ -71,7 +71,45 @@ async def fetch_anisong_name(name: str, limit: int = 25):
             })
     
     return anime_names     
-        
+
+async def fetch_anisong_artist(artist: str, limit: int = 25):
+    url = (
+        f"{BASE_URL}/artist?"
+        f"filter[name]={artist}"
+        f"&include=songs.animethemes.animethemeentries.videos,songs.animethemes.anime"
+        f"&limit={limit}"
+    )
+  
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
+        response.raise_for_status()
+        data = response.json()
+
+    songs = []
+
+    for art in data.get("artists", []):
+        for song in art.get("songs", []):
+            title = song.get("title")
+            artist_name = art.get("name")
+
+            for theme in song.get("animethemes", []):
+                anime = theme.get("anime") or {}
+                anime_name = anime.get("name")
+                year = anime.get("year")
+                season = anime.get("season")
+
+                songs.append({
+                    "anime": anime_name,
+                    "song_title": title,
+                    "artists": [artist_name],
+                    "theme_type": theme.get("type"),
+                    "year": year,
+                    "season": season
+                })
+
+    return songs
+
+
 async def fetch_anisong_criteria(
     year: Optional[int] = None,
     season: Optional[str] = None,
@@ -178,6 +216,13 @@ async def search_and_resolve_anisong(q: list[str], session: Session, user_id: in
                 logging.info(f"fetch_anisong_name returned {len(result)} items")
             except httpx.HTTPStatusError as e:
                 logging.warning(f"fetch_anisong_name error: {e}")
+                result = []
+        if not result:
+            try:
+                result = await fetch_anisong_artist(query, limit =20)
+                logging.info(f"fetch_anisong_artist returned {len(result)} items")
+            except httpx.HTTPStatusError as e:
+                logging.warning(f"fetch_anisong_artist error: {e}")
                 result = []
         if not result:
             if query.isdigit():
