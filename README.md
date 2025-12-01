@@ -151,22 +151,22 @@ POST /preferences/ {tag: string, weight: float}
 
 This API Integration with the purpose for education use and not affiliated with AnimeThemes, Youtube, and Spotify. It was all used with the integration with public API, credits to:
 
-- AnimeThemes\n
-  ![animethemes](https://avatars.githubusercontent.com/u/72712310?s=200&v=4){ width: 300px; }
+- AnimeThemes<br/>
+  ![animethemes](https://avatars.githubusercontent.com/u/72712310?s=200&v=4)
 
 ```
 https://api-docs.animethemes.moe/
 ```
 
-- Youtube\n
-  ![youtube](https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png){ width: 300px; }
+- Youtube<br/>
+  ![youtube](https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png)
 
 ```
 https://developers.google.com/youtube/v3/docs
 ```
 
-- Spotify\n
-  ![spotify](https://upload.wikimedia.org/wikipedia/commons/7/74/Spotify_App_Logo.svg){ width: 300px; }
+- Spotify<br/>
+  ![spotify](https://upload.wikimedia.org/wikipedia/commons/7/74/Spotify_App_Logo.svg)
 
 ```
 https://developer.spotify.com/documentation/web-api
