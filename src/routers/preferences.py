@@ -4,7 +4,10 @@ from src.utils.sqlite import get_session
 from src.services.preferences_service import get_user_preferences, add_preference
 from src.routers.auth import get_current_user
 
-router = APIRouter(prefix="/preferences")
+router = APIRouter(
+    prefix="/preferences",  
+    tags=["preferences"]
+)
 
 @router.get("/")
 def list_preferences(

@@ -1,0 +1,11 @@
+services:
+  api:
+    build: .
+    container_name: anisong_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - ENV=production
+    restart: always

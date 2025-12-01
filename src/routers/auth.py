@@ -6,7 +6,10 @@ from src.services.user_services import get_user_by_username, create_user
 from src.services.auth_services import verify_password, create_token, decode_token
 from src.models.request_model import RegisterRequest, LoginRequest
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(
+    prefix="/auth",
+    tags=["auth"]
+)
 
 oauth_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
