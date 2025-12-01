@@ -1,6 +1,6 @@
 # II3160_FinalProject_AnisongRecommendationEngineIntegrationAPI_18223140
 
-![finally](https://images-ext-1.discordapp.net/external/4A_8RMKsQSgXMuX5vpC0AN6WbhaiuNnB8smI_u4K6gI/https/media.tenor.com/FwMO3YbXtp8AAAPo/mono-mono-weekend.mp4)
+![finally](docs/mono-weekend-animation-ann-kiriyama-sleeping-after-doing-many-tasks.gif)
 
 This Project is dedicated to fulfill one of the index of one of the subject (II3160 - Integrated System Technology). This project contain of anisong searching based on the song artists, source of the animes, year or season were this song released. Follow up by User Preferences based on anisongs searching.
 
@@ -151,22 +151,22 @@ POST /preferences/ {tag: string, weight: float}
 
 This API Integration with the purpose for education use and not affiliated with AnimeThemes, Youtube, and Spotify. It was all used with the integration with public API, credits to:
 
-- AnimeThemes
-  ![animethemes](https://avatars.githubusercontent.com/u/72712310?s=200&v=4)
+- AnimeThemes\n
+  ![animethemes](https://avatars.githubusercontent.com/u/72712310?s=200&v=4){ width: 300px; }
 
 ```
 https://api-docs.animethemes.moe/
 ```
 
-- Youtube
-  ![youtube](https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png)
+- Youtube\n
+  ![youtube](https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png){ width: 300px; }
 
 ```
 https://developers.google.com/youtube/v3/docs
 ```
 
-- Spotify
-  ![spotify](https://upload.wikimedia.org/wikipedia/commons/7/74/Spotify_App_Logo.svg)
+- Spotify\n
+  ![spotify](https://upload.wikimedia.org/wikipedia/commons/7/74/Spotify_App_Logo.svg){ width: 300px; }
 
 ```
 https://developer.spotify.com/documentation/web-api
