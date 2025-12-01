@@ -1,5 +1,7 @@
 # II3160_FinalProject_AnisongRecommendationEngineIntegrationAPI_18223140
 
+![finally](https://images-ext-1.discordapp.net/external/4A_8RMKsQSgXMuX5vpC0AN6WbhaiuNnB8smI_u4K6gI/https/media.tenor.com/FwMO3YbXtp8AAAPo/mono-mono-weekend.mp4)
+
 This Project is dedicated to fulfill one of the index of one of the subject (II3160 - Integrated System Technology). This project contain of anisong searching based on the song artists, source of the animes, year or season were this song released. Follow up by User Preferences based on anisongs searching.
 
 # Name of The Project
@@ -34,7 +36,24 @@ https://console.cloud.google.com/marketplace/product/google/youtube.googleapis.c
 https://jwtsecrets.com/
 ```
 
+# Environment Variables
+
+Make One .env file and fill this below
+
+```
+YOUTUBE_API_KEY=YOUR_YOUTUBE_API_KEY
+SPOTIFY_CLIENT_ID=YOUR_SPOTIFY_CLIENT_ID
+SPOTIFY_CLIENT_SECRET=YOUR_SPOTIFY_CLIENT_SECRET
+JWT_SECRET=YOUR_JWT_SECRET
+```
+
 # Installation for Local Use
+
+- Clone this repository to your local storage
+
+```
+git clone https://github.com/rinmdfa25/II3160_FinalProject_AnisongRecommendationEngineIntegrationAPI_18223140.git
+```
 
 - Set up The Environment
 
@@ -130,21 +149,24 @@ POST /preferences/ {tag: string, weight: float}
 
 # Credits
 
-This API Integration were not all made by me. It was all used with the integration with public API, credits to:
+This API Integration with the purpose for education use and not affiliated with AnimeThemes, Youtube, and Spotify. It was all used with the integration with public API, credits to:
 
 - AnimeThemes
+  ![animethemes](https://avatars.githubusercontent.com/u/72712310?s=200&v=4)
 
 ```
 https://api-docs.animethemes.moe/
 ```
 
 - Youtube
+  ![youtube](https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png)
 
 ```
 https://developers.google.com/youtube/v3/docs
 ```
 
 - Spotify
+  ![spotify](https://upload.wikimedia.org/wikipedia/commons/7/74/Spotify_App_Logo.svg)
 
 ```
 https://developer.spotify.com/documentation/web-api
