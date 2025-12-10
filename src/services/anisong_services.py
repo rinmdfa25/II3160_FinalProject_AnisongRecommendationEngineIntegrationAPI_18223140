@@ -74,10 +74,10 @@ async def fetch_anisong_name(name: str, limit: int = 25):
 
 async def fetch_anisong_artist(artist: str, limit: int = 25):
     url = (
-        f"{BASE_URL}/artist?"
-        f"filter[name]={artist}"
-        f"&include=songs.animethemes.animethemeentries.videos,songs.animethemes.anime"
-        f"&limit={limit}"
+    f"{BASE_URL}/artist?"
+    f"filter[name]={artist}"
+    f"&include=songs.animethemes.animethemeentries.videos,songs.animethemes.anime"
+    f"&limit={limit}"
     )
   
     async with httpx.AsyncClient() as client:
@@ -136,10 +136,10 @@ async def fetch_anisong_criteria(
     for anime in data.get("anime", []):
         anime_name = anime.get("name")
         for theme in anime.get("animethemes", []):
-            song = theme.get("song", {})
+            song = theme.get("song") or {}
             anime_songs.append({
                 "anime": anime_name,
-                "song_title": song.get("title"),
+                "song_title": song.get("title") or "",
                 "artists" : [a.get("name") for a in song.get("artists", [])],
                 "theme_type": theme.get("type")
             })  
@@ -241,7 +241,7 @@ async def search_and_resolve_anisong(q: list[str], session: Session, user_id: in
                 logging.warning(f"fetch_anisong_criteria error: {e}")
                 result = []
         if not result:
-            return None
+            result = []
         
     for raw in result:
         resolved = await resolve_anisong(raw)
@@ -272,3 +272,4 @@ async def search_and_resolve_anisong(q: list[str], session: Session, user_id: in
         await save_user_history(session, user_id, song.id)
 
     return songs
+

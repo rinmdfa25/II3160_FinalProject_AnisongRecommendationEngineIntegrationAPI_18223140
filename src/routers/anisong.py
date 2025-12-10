@@ -31,6 +31,7 @@ async def search_anisongs_by_theme(theme_type: str = Query(..., regex="^(OP|ED|I
         
         if isinstance(yt_url, Exception):
             yt_url = None
+            
         if isinstance(sp_url, Exception):
             sp_url = None
             
@@ -237,3 +238,4 @@ async def search_anisong_route(
         )
 
     return songs
+

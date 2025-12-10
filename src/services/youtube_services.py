@@ -29,15 +29,3 @@ async def search_youtube(query: str):
                 return None
             raise e
     
-async def video_stats(video_id: str):
-    url = "https://www.googleapis.com/youtube/v3/videos"
-    
-    params = {
-        "part" : "statistics",
-        "id": video_id,
-        "key" : YOUTUBE_API_KEY
-    }
-    
-    async with httpx.AsyncClient() as client:
-        r = await client.get(url, params=params)
-        return r.json()

@@ -18,4 +18,3 @@ def on_start():
 @app.get("/")
 def main():
     return {"message": "Welcome to Best Anisongs Gathering And Searching!"}
-

@@ -1,7 +1,7 @@
 services:
   api:
     build: .
-    container_name: anisong_api
+    container_name: anisong_searching_api
     ports:
       - "8000:8000"
     volumes:
