@@ -55,9 +55,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build Docker
-        run: docker build --build-arg FOO=$FOO anisong-api .
+        run: docker build --build-arg FOO=${{ secrets.FOO }} -t anisong-api .
       - name: Run Container
-        run: docker run --rm -e PYTHONUNBUFFERED=1 feature-metadata-gateway uv run pytest tests/ -v --cov=app --cov-report=term-missing
+        run: docker run -d -p 8000:8000 anisong-api
 
   coverage:
     runs-on: ubuntu-latest
