@@ -6,7 +6,8 @@ from src.main import app
 from src.services import auth_services
 from src.routers.auth import oauth_scheme
 from fastapi import HTTPException
-        
+import httpx
+
 def setup_db():
     engine = create_engine("sqlite://", echo=False)
     SQLModel.metadata.create_all(engine)
@@ -35,7 +36,7 @@ def dummy_oauth():
 app.dependency_overrides[oauth_scheme] = dummy_oauth
 
 # get_current_user
-async def dummy_get_user(token= "valid-token"):
+async def dummy_get_user(token="valid-token"):
     data = dummy_decode(token)
     if not data:
         raise HTTPException(status_code=401)
@@ -63,7 +64,7 @@ class DummyUser:
         self.id = id
         self.username = username
         self.password_hash = password_hash
-        
+
 patch_user = patch("src.services.user_services.get_user_by_username",
                    return_value=DummyUser(id=24, username="sagab", password_hash="x"))
 
@@ -106,6 +107,47 @@ patch_history = patch("src.services.anisong_services.save_user_history",
 patch_pref = patch("src.services.preferences_service.update_preference_from_history",
                    new=AsyncMock(return_value=None))
 
+# Patch the AsyncClient used inside src.services.anisong_services
+patch_httpx_client = patch("src.services.anisong_services.httpx.AsyncClient")
+
+# helper that configures the mock returned by patch_httpx_client
+def configure_mock_httpx(mock_async_client):
+    # mock_async_client is the patched class (the object yielded by "with patch_httpx_client as mock_async_client")
+    # instance if code does: client = httpx.AsyncClient()
+    inst = mock_async_client.return_value
+    # async side effect for .get
+    async def fake_get(url, params=None, **kwargs):
+        # Create a minimal request object for the response
+        request = httpx.Request("GET", url)
+        # basic responses that mimic animethemes API structure enough for service parsing
+        # you can extend this mapping if anisong_services expects more detailed JSON
+        if isinstance(url, str) and "/anime?" in url and "filter[name]" in url:
+            # fetch_anisong_name expects {"anime": [...]}
+            return httpx.Response(200, json={"anime": []}, request=request)
+        if isinstance(url, str) and "/artist?" in url:
+            # fetch_anisong_artist expects {"artists": [...]}
+            return httpx.Response(200, json={"artists": []}, request=request)
+        if isinstance(url, str) and "/animetheme?" in url and "filter[type]" in url:
+            # fetch_anisong_list expects {"animethemes": [...]}
+            return httpx.Response(200, json={"animethemes": []}, request=request)
+        if isinstance(url, str) and "/anime" in url:
+            # fetch_anisong_criteria expects {"anime": [...]}
+            return httpx.Response(200, json={"anime": []}, request=request)
+        # default empty
+        return httpx.Response(200, json={"data": []}, request=request)
+
+    async def fake_post(url, **kwargs):
+        request = httpx.Request("POST", url)
+        return httpx.Response(200, json={"data": {}}, request=request)
+
+    inst.get = AsyncMock(side_effect=fake_get)
+    inst.post = AsyncMock(side_effect=fake_post)
+
+    # context-manager usage: "async with httpx.AsyncClient() as client:"
+    cm_inst = mock_async_client.return_value.__aenter__.return_value
+    cm_inst.get = AsyncMock(side_effect=fake_get)
+    cm_inst.post = AsyncMock(side_effect=fake_post)
+
 patches = [
     patch_user,
     patch_user_create,
@@ -119,11 +161,17 @@ patches = [
     patch_save_song,
     patch_history,
     patch_pref,
+    patch_httpx_client,
 ]
 
 @fixture
 def client():
-    with patch_user, patch_user_create, patch_verify, patch_token, patch_decode, patch_youtube, patch_spotify, patch_artist, patch_theme, patch_name, patch_criteria, patch_search_master, patch_save_song, patch_history, patch_pref:
+    # enter many patch contexts; get the httpx mock as mock_httpx so we can configure it
+    with patch_user, patch_user_create, patch_verify, patch_token, patch_decode, \
+         patch_youtube, patch_spotify, patch_artist, patch_theme, patch_name, \
+         patch_criteria, patch_search_master, patch_save_song, patch_history, \
+         patch_pref, patch_httpx_client as mock_httpx:
+        configure_mock_httpx(mock_httpx)
         yield TestClient(app)
         
 def test_main():
@@ -316,7 +364,7 @@ def test_search_anisong_by_name_empty(client):
 
 def test_search_anisong_themes_empty(client):
     headers = register_and_login(client)
-    with patch("src.services.anisong_services.fetch_anisong_theme", MagicMock(return_value=[])):
+    with patch("src.services.anisong_services.fetch_anisong_list", MagicMock(return_value=[])):
         r = client.get("/anisong/themes", params={"theme_type": "OP"}, headers=headers)
     assert r.status_code == 200
 
