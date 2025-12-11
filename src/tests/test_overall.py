@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock, AsyncMock
 from sqlmodel import SQLModel, Session, create_engine
 from src.main import app
 from src.services import auth_services
-from src.routers.auth import get_current_user, oauth_scheme
+from src.routers.auth import oauth_scheme
 from fastapi import HTTPException
         
 def setup_db():
