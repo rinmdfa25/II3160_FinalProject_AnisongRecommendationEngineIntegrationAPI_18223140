@@ -85,11 +85,8 @@ def test_auth_invalid_password(client):
 
 def test_auth_decode_token_fail(client):
     from src.routers.auth import get_current_user
-    try:
-        get_current_user("abc.def.ghi")
-    except Exception as e:
-        assert True
-        
+    get_current_user("abc.def.ghi")
+    
 def test_get_preferences(client):
     headers = register_and_login(client)
     r = client.get("/preferences/", headers=headers)
