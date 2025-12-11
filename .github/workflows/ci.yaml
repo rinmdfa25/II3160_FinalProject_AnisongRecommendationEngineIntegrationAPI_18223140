@@ -1,4 +1,4 @@
-name: CI Tests
+name: CI
 
 on:
   push:
@@ -10,8 +10,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.12"
       - name: Install uv
@@ -24,11 +24,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: sqlite+aiosqlite:///./test.db
+      DATABASE_URL: sqlite+aiosqlite:///./test.db,
+      YOUTUBE_API_KEY: AIzaSyBL-6sodKqgDeKofiyemxCcGAH2udK0xUQ,
+      SPOTIFY_CLIENT_ID: bd91232b8efe4e2b979b59b36a3cc1de,
+      SPOTIFY_CLIENT_SECRET: a16f7b5859cc4bcca9c06b632b9dfe7a,
+      JWT_SECRET: 10d47e23a1c3b7a562f4ae462fb1cb4d8345d1a0218277ac6ccb14580d11e81e
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.12"
       - name: Install uv
@@ -42,14 +46,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, test]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - name: Build Docker
         run: docker build -t anisong-api .
 
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: coverage.xml
