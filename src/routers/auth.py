@@ -17,7 +17,7 @@ def get_current_user(token: str = Depends(oauth_scheme)):
     try:
         payload = decode_token(token)
         return payload["sub"]
-    except:
+    except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired Token")
 
 @router.post("/register")

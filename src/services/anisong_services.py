@@ -1,5 +1,4 @@
 import httpx
-from fastapi import Query
 from typing import Optional
 from sqlmodel import Session, select
 from src.models.anisong_model import AnisongDB
@@ -12,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 BASE_URL = "https://api.animethemes.moe"
 
 async def fetch_anisong_list(theme_type: str, limit: int = 25):
-    if not theme_type in ["OP", "ED", "INS"]:
+    if theme_type not in ["OP", "ED", "INS"]:
         return []
     
     url = (

@@ -18,6 +18,8 @@ jobs:
         run: pip install uv
       - name: Sync deps
         run: uv sync
+      - name: Install ruff
+        run: uv pip install ruff
       - name: Lint
         run: uv run ruff check .
 
