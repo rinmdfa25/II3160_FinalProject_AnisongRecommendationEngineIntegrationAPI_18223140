@@ -1,11 +1,8 @@
 from fastapi.testclient import TestClient
 from pytest import fixture
-import pytest
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import Session, SQLModel, create_engine
 from src.services.user_services import get_user_by_username, create_user
-from src.services.anisong_services import save_anisong, search_youtube, search_spotify, fetch_anisong_artist, fetch_anisong_criteria, fetch_anisong_list, fetch_anisong_name, save_user_history, search_and_resolve_anisong, resolve_anisong
-import httpx
-import respx
+from src.services.anisong_services import  search_youtube, search_spotify, fetch_anisong_artist, fetch_anisong_criteria
 
 @fixture
 def client():
