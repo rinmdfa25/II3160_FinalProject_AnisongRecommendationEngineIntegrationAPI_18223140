@@ -88,14 +88,19 @@ SPOTIFY_CLIENT_SECRET=YOUR_SPOTIFY_CLIENT_SECRET
 JWT_SECRET=YOUR_JWT_SECRET
 ```
 
+- Syncronize uv environment
+
+```
+uv sync
+```
+
 - Run the Application
 
 ```
-uv uvicorn src.main:app --reload
+uv run uvicorn src.main:app --reload
 ```
 
-- Open your local browser or Run it with Postman
-  Usually using localhost address
+- Open your local browser or Run it with Postman or localhost address
 
 ```
 http://127.0.0.1/8000
@@ -119,7 +124,7 @@ docker compose up -d
 
 # Open Up The Browser and use The endpoints
 
-- Open up http://localhost:8000/docs#/ to see and use the endpoints.
+- Open up https://ii-3160-final-project-anisong-recom.vercel.app/docs to see and use the endpoints.
 
 # Endpoints to use
 
@@ -147,9 +152,30 @@ GET /preferences/
 POST /preferences/ {tag: string, weight: float}
 ```
 
+# API Testing
+
+Every codes needs to be cover by an environment so that need testing to see how much that the environment could reach every skeleton codes based on coverage with the target of 95% being covered. For API Testing to see the coverage, you need to open your terminal and run this command below
+
+```
+pytest --cov=src. --cov-report=term-missing
+```
+
+# CI Workflow
+
+Every development were continous and need to be check if the skeleton codes are fully used and remove unnecessesary code lines of modules. For CI Workflow, open the Actions Bar in Github and see what jobs that the CI do.
+
+- Linting: To see the quality of the project based on the skeleton codes
+- Testing: To see the coverage of the project that the environment could reach
+- Docker: To build up a Docker container to use all of the codes in one container
+- Coverage: To set up parameter of the environment could reach all the skeleton codes
+
+# DISCLAIMER!!!
+
+CI Tests doesn't work because the environment needs request on AnimeThemes API. So, therefore, needs to make mock with dummy data. For more information, open the issues on Gitub
+
 # Credits
 
-This API Integration with the purpose for education use and not affiliated with AnimeThemes, Youtube, and Spotify. It was all used with the integration with public API, credits to:
+This API Integration with the purpose for education use and not affiliated with AnimeThemes, Youtube, and Spotify. It was all used with the integration with public APIs, credits to:
 
 - AnimeThemes<br/>
   ![animethemes](https://avatars.githubusercontent.com/u/72712310?s=200&v=4)
